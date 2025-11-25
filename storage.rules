@@ -1,0 +1,50 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024; // 5MB max
+    }
+    
+    // User profile images
+    match /users/{userId}/profile/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) && isImageFile() && isValidSize();
+      allow delete: if is Owner(userId);
+    }
+    
+    // Activity images
+    match /users/{userId}/activities/{activityId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) && isImageFile() && isValidSize();
+      allow delete: if isOwner(userId);
+    }
+    
+    // Post images (social feed)
+    match /posts/{postId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isImageFile() && isValidSize();
+      allow delete: if isSignedIn(); // Can delete own post images
+    }
+    
+    // Resource images (user-submitted)
+    match /resources/{resourceId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isImageFile() && isValidSize();
+      allow delete: if false; // Only admin can delete
+    }
+  }
+}

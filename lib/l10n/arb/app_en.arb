@@ -1,0 +1,22 @@
+{
+    "@@locale": "en",
+    "appTitle": "EcoSphere",
+    "onboardingTrackTitle": "Track Your Impact",
+    "onboardingTrackDesc": "Monitor your daily carbon footprint and see how your choices affect the planet.",
+    "onboardingJoinTitle": "Join the Community",
+    "onboardingJoinDesc": "Participate in global challenges and compete with friends for a greener future.",
+    "onboardingDiscoverTitle": "Discover Resources",
+    "onboardingDiscoverDesc": "Find local eco-friendly stores, recycling centers, and sustainable services near you.",
+    "getStarted": "Get Started",
+    "next": "Next",
+    "skip": "Skip",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "dashboard": "Dashboard",
+    "community": "Community",
+    "resources": "Resources",
+    "learn": "Learn",
+    "ecoScore": "Eco Score",
+    "impactBreakdown": "Your Impact Breakdown",
+    "suggestedActions": "Suggested Actions"
+}
