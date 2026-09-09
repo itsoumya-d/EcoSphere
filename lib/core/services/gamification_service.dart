@@ -26,7 +26,8 @@ class GamificationService {
 
   /// Calculate level from total XP
   int calculateLevel(int totalXP) {
-    // Level formula: level = sqrt(XP / xpPerLevel)
+    // Guard against negative XP so level never drops below 1.
+    if (totalXP < 0) return 1;
     return (totalXP / AppConstants.xpPerLevel).floor() + 1;
   }
 

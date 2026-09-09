@@ -1,18 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/auth_service.dart';
 import '../domain/user.dart';
 
 /// Repository for managing user data in Firestore
 class AuthRepository {
   final FirebaseFirestore _firestore;
-  final AuthService _authService;
 
   AuthRepository({
     required FirebaseFirestore firestore,
-    required AuthService authService,
-  })  : _firestore = firestore,
-        _authService = authService;
+  }) : _firestore = firestore;
 
   /// Users collection reference
   CollectionReference get _usersCollection => _firestore.collection('users');
@@ -142,6 +138,5 @@ class AuthRepository {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     firestore: FirebaseFirestore.instance,
-    authService: AuthService(),
   );
 });
