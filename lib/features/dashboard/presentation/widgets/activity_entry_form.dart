@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_controller.dart';
 import '../../domain/user_activity.dart';
 import '../../domain/emission_factors.dart';
-import '../../data/activity_repository.dart';
 import '../providers/dashboard_controller.dart';
 import '../../../../core/widgets/milestone_celebration.dart';
 import '../../../../core/services/gamification_service.dart';
-import '../../../community/domain/badge.dart';
 
 /// Detailed activity entry form for custom activities
 class ActivityEntryForm extends ConsumerStatefulWidget {
@@ -101,8 +99,6 @@ class _ActivityEntryFormState extends ConsumerState<ActivityEntryForm> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
@@ -468,7 +464,6 @@ class _ActivityEntryFormState extends ConsumerState<ActivityEntryForm> {
 
     // Show first badge (in a real app, might want to queue them)
     // For now, just showing the first one to avoid dialog stacking issues
-    final badgeId = badgeIds.first;
     // Note: In a real app we'd fetch the badge details. 
     // For this demo, we'll show a generic badge unlock message
     // or we could look it up from BadgeDefinitions if we had access

@@ -20,7 +20,8 @@ void main() {
         diet: 'Meat-heavy',
         energy: 'High (Always on)',
       );
-      expect(score, 350.0); // 1000 - 200 - 250 - 200 = 350
+      // ~34.06 kg CO2/day lands at 526.63 on the 300-1000 linear scale.
+      expect(score, closeTo(526.63, 0.01));
     });
 
     test('should clamp score to 0 if negative impact exceeds base', () {
