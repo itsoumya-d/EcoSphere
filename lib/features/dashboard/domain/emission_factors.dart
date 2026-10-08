@@ -118,13 +118,30 @@ class UsagePatterns {
 
 /// Carbon footprint calculator
 class CarbonCalculator {
+  static double _emissions(double factor, num quantity, String name) {
+    if (!quantity.isFinite || quantity < 0) {
+      throw ArgumentError.value(quantity, name, 'Must be finite and non-negative');
+    }
+    final result = factor * quantity;
+    if (!result.isFinite) {
+      throw ArgumentError.value(quantity, name, 'Carbon impact is too large');
+    }
+    return result;
+  }
+
+  static void _requireFinite(double value, String name) {
+    if (!value.isFinite) {
+      throw ArgumentError.value(value, name, 'Must be finite');
+    }
+  }
+
   /// Calculate transportation emissions (kg CO2)
   static double transportation({
     required String mode,
     required double miles,
   }) {
     final factor = EmissionFactors.transportation[mode] ?? 0.0;
-    return factor * miles;
+    return _emissions(factor, miles, 'miles');
   }
 
   /// Calculate diet emissions (kg CO2)
@@ -133,7 +150,7 @@ class CarbonCalculator {
     required double servings,
   }) {
     final factor = EmissionFactors.diet[foodType] ?? 0.0;
-    return factor * servings;
+    return _emissions(factor, servings, 'servings');
   }
 
   /// Calculate energy emissions (kg CO2)
@@ -142,7 +159,7 @@ class CarbonCalculator {
     required double kwh,
   }) {
     final factor = EmissionFactors.energy[source] ?? 0.0;
-    return factor * kwh;
+    return _emissions(factor, kwh, 'kwh');
   }
 
   /// Calculate waste emissions (kg CO2)
@@ -151,7 +168,7 @@ class CarbonCalculator {
     required double kg,
   }) {
     final factor = EmissionFactors.waste[wasteType] ?? 0.0;
-    return factor * kg;
+    return _emissions(factor, kg, 'kg');
   }
 
   /// Calculate shopping emissions (kg CO2)
@@ -160,7 +177,7 @@ class CarbonCalculator {
     required int quantity,
   }) {
     final factor = EmissionFactors.shopping[item] ?? 0.0;
-    return factor * quantity;
+    return _emissions(factor, quantity, 'quantity');
   }
 
   /// Estimate daily carbon footprint based on lifestyle
@@ -207,18 +224,23 @@ class CarbonCalculator {
       total += waste(wasteType: 'landfill_general', kg: 1.5);
     }
 
+    _requireFinite(total, 'dailyFootprint');
     return total;
   }
 
   /// Convert daily emissions to yearly
   static double dailyToYearly(double dailyKgCO2) {
-    return dailyKgCO2 * 365;
+    _requireFinite(dailyKgCO2, 'dailyKgCO2');
+    final yearly = dailyKgCO2 * 365;
+    _requireFinite(yearly, 'yearlyKgCO2');
+    return yearly;
   }
 
   /// Convert to eco score (0-1000 scale, lower emissions = higher score)
   /// Average US carbon footprint is ~16 tons/year = 43.8 kg/day
   /// Target: < 5 tons/year = 13.7 kg/day
   static double toEcoScore(double dailyKgCO2) {
+    _requireFinite(dailyKgCO2, 'dailyKgCO2');
     const double targetDaily = 13.7; // kg CO2 per day
     const double avgDaily = 43.8; // US average
     
@@ -266,3 +288,4 @@ class CarbonCalculator {
     }
   }
 }
+

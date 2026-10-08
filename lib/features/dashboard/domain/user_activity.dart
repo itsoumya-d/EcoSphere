@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'emission_factors.dart';
+import 'activity_quantity.dart';
 
 /// Activity types that users can log
 enum ActivityType {
@@ -42,7 +43,7 @@ class UserActivity {
     String? notes,
     String? imageUrl,
   }) {
-    final carbonImpact = _calculateImpact(type, category, quantity);
+    final carbonImpact = calculateImpact(type, category, quantity);
     final now = DateTime.now();
     
     return UserActivity(
@@ -58,11 +59,19 @@ class UserActivity {
     );
   }
 
-  static double _calculateImpact(
+  /// Validate and calculate the same impact used by previews and new entries.
+  static double calculateImpact(
     ActivityType type,
     String category,
     double quantity,
   ) {
+    final error = ActivityQuantity.validate(
+      quantity,
+      wholeItems: type == ActivityType.shopping,
+    );
+    if (error != null) {
+      throw ArgumentError.value(quantity, 'quantity', error);
+    }
     switch (type) {
       case ActivityType.transport:
         return CarbonCalculator.transportation(
@@ -262,3 +271,4 @@ class QuickLogPresets {
     );
   }
 }
+
