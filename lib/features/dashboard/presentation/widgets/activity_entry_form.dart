@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_controller.dart';
 import '../../domain/user_activity.dart';
-import '../../domain/emission_factors.dart';
+import '../../domain/activity_quantity.dart';
 import '../providers/dashboard_controller.dart';
 import '../../../../core/widgets/milestone_celebration.dart';
 import '../../../../core/services/gamification_service.dart';
@@ -217,18 +217,9 @@ class _ActivityEntryFormState extends ConsumerState<ActivityEntryForm> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a value';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Please enter a valid number';
-                      }
-                      if (double.parse(value) <= 0) {
-                        return 'Value must be greater than 0';
-                      }
-                      return null;
-                    },
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    onChanged: (_) => setState(() {}),
+                    validator: _validateQuantity,
                   ),
                   const SizedBox(height: 16),
 
@@ -251,8 +242,7 @@ class _ActivityEntryFormState extends ConsumerState<ActivityEntryForm> {
                   const SizedBox(height: 24),
 
                   // Preview carbon impact
-                  if (_quantityController.text.isNotEmpty &&
-                      double.tryParse(_quantityController.text) != null)
+                  if (_validateQuantity(_quantityController.text) == null)
                     _buildImpactPreview(),
 
                   const SizedBox(height: 16),
@@ -280,45 +270,31 @@ class _ActivityEntryFormState extends ConsumerState<ActivityEntryForm> {
     );
   }
 
-  Widget _buildImpactPreview() {
-    final quantity = double.tryParse(_quantityController.text) ?? 0.0;
-    if (quantity <= 0 || _selectedCategory == null) {
-      return const SizedBox.shrink();
+  String? _validateQuantity(String? value) {
+    final error = ActivityQuantity.validateText(
+      value,
+      wholeItems: _selectedType == ActivityType.shopping,
+    );
+    if (error != null) return error;
+    if (_selectedCategory == null) return 'Please select a category';
+    try {
+      UserActivity.calculateImpact(
+        _selectedType,
+        _selectedCategory!,
+        double.parse(value!),
+      );
+    } on ArgumentError {
+      return 'Value is too large';
     }
+    return null;
+  }
 
-    double impact = 0.0;
-    switch (_selectedType) {
-      case ActivityType.transport:
-        impact = CarbonCalculator.transportation(
-          mode: _selectedCategory!,
-          miles: quantity,
-        );
-        break;
-      case ActivityType.diet:
-        impact = CarbonCalculator.diet(
-          foodType: _selectedCategory!,
-          servings: quantity,
-        );
-        break;
-      case ActivityType.energy:
-        impact = CarbonCalculator.energy(
-          source: _selectedCategory!,
-          kwh: quantity,
-        );
-        break;
-      case ActivityType.waste:
-        impact = CarbonCalculator.waste(
-          wasteType: _selectedCategory!,
-          kg: quantity,
-        );
-        break;
-      case ActivityType.shopping:
-        impact = CarbonCalculator.shopping(
-          item: _selectedCategory!,
-          quantity: quantity.toInt(),
-        );
-        break;
-    }
+  Widget _buildImpactPreview() {
+    final impact = UserActivity.calculateImpact(
+      _selectedType,
+      _selectedCategory!,
+      double.parse(_quantityController.text),
+    );
 
     final colorScheme = Theme.of(context).colorScheme;
     final isPositive = impact < 0;
@@ -490,3 +466,4 @@ class _ActivityEntryFormState extends ConsumerState<ActivityEntryForm> {
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 }
+
